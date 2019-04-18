@@ -26,20 +26,25 @@ func init() {
     }
 
     root = dir
+    if filepath.Base(dir) == "bin" {
+        root += "/.."
+    }
+
+    logger.Println("root patch", root)
 }
 
-func _pares_source() string {
+func _pares_source(log_level string) string {
     _, filename, line, _ := runtime.Caller(3)
     filename, _ = filepath.Rel(root, filename)
-    return fmt.Sprintf("[%s:%d]", filename, line)
+    return fmt.Sprintf("[%s @./%s:%d]", log_level, filename, line)
 }
 
-func _printf(format string, a ...interface{}) {
-    logger.Printf("%s %s\n",_pares_source(), fmt.Sprintf(format, a...))
+func _printf(log_level string, format string, a ...interface{}) {
+    logger.Printf("%s %s\n",_pares_source(log_level), fmt.Sprintf(format, a...))
 }
 
-func _println(a ...interface{}) {
-    tmp := []interface{}{_pares_source()}
+func _println(log string, a ...interface{}) {
+    tmp := []interface{}{_pares_source(log)}
     for _, val := range a {
         tmp = append(tmp, val)
     }
@@ -49,60 +54,60 @@ func _println(a ...interface{}) {
 
 func Debugf(format string, a ...interface{}) {
     if logLevel > 2 {
-        _printf(format, a...)
+        _printf("DBG", format, a...)
     }
 }
 
 func Debug(a ...interface{}){
     if logLevel > 2 {
-        _println(a...)
+        _println("DBG", a...)
     }
 }
 
 func Infof(format string, a ...interface{}) {
     if logLevel > 1 {
-        _printf(format, a...)
+        _printf("INF", format, a...)
     }
 }
 
 func Info (a ...interface{}) {
     if logLevel > 1 {
-        _println(a...)
+        _println("INF", a...)
     }
 }
 
 
 func Errorf (format string, a ...interface{}) {
     if logLevel > 0 {
-        _printf(format, a...)
+        _printf("ERR",format, a...)
     }
 }
 
 func Error (a ...interface{}) {
     if logLevel > 0 {
-        _println(a...)
+        _println("ERR",a...)
     }
 }
 
 
 func Panic(format string, a ...interface{}) {
-    _printf(format, a...)
+    _printf("DBG",format, a...)
     panic("!!")
 }
 
 func Logf(format string, a ...interface{}) {
-    _printf(format, a...)
+    _printf("INF",format, a...)
 }
 
 func Log(a ...interface{}) {
-    _println(a...)
+    _println("INF",a...)
 }
 
 func Stack(format string, a ...interface{}){
-    _printf(format, a...)
+    _printf("DBG",format, a...)
     buf := make([]byte, 8192)
     runtime.Stack(buf, false)
-    _printf("!!!!!stack!!!!!: %s", buf)
+    _printf("DBG","!!!!!stack!!!!!: %s", buf)
 }
 
 func Recover() {
